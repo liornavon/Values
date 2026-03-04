@@ -126,7 +126,9 @@
       return a;
     }
 
-    const TOTAL_ROUNDS = 5;
+   const VALUES_PER_ROUND = 5;
+const INITIAL_VALUES = 5;
+const TOTAL_ROUNDS = Math.ceil((ALL_VALUES.length - INITIAL_VALUES) / VALUES_PER_ROUND);
 
     function StarIcon({ size = 20 }){
       return (
@@ -279,7 +281,7 @@
 
       const startGame = useCallback(() => {
         const shuffled = shuffle(ALL_VALUES);
-        const initial = shuffled.slice(0, 5);
+       const initial = shuffled.slice(0, INITIAL_VALUES);
         const used = new Set(initial);
         setMyValues(initial);
         setUsedValues(used);
@@ -290,8 +292,8 @@
 
       function dealNewRound(currentUsed){
         const available = ALL_VALUES.filter((v) => !currentUsed.has(v));
-        const next5 = shuffle(available).slice(0, 5);
-        setNewValues(next5);
+       const next = shuffle(available).slice(0, VALUES_PER_ROUND);
+setNewValues(next);
         setSelectedToRemove(new Set());
         setSelectedToAdd(new Set());
         setSwapMode(false);
