@@ -1,882 +1,875 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>שר הערכים</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>שר הערכים</title>
 
-<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<style>
-body{
-margin:0;
-font-family:Heebo, sans-serif;
-background:#0f1b2d;
-color:white;
-}
-</style>
+  <style>
+    body{
+      margin:0;
+      font-family:Heebo, "Noto Sans Hebrew", sans-serif;
+      background:#0f1b2d;
+      color:white;
+    }
+  </style>
 </head>
 
 <body>
+  <div id="root"></div>
 
-<div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
 
-<script type="text/babel">
+    const ALL_VALUES = [
+      // יחסים במשפחה
+      "אהבה","כבוד","הקשבה","סבלנות","תמיכה",
+      "נאמנות","אכפתיות","פרגון","קבלה","חום משפחתי",
+      "שייכות","אמון",
+      // אופי והתנהגות
+      "יושר","אחריות","אומץ","התמדה","משמעת עצמית",
+      "צניעות","נדיבות","אדיבות","סובלנות","אמינות",
+      "הגינות","שליטה עצמית",
+      // חברתיים
+      "חברות","עזרה לאחר","שיתוף פעולה","הכלה",
+      "קבלת השונה","צדק","שוויון","תרומה לקהילה",
+      "מעורבות חברתית","כבוד לאחר",
+      // התפתחות אישית
+      "למידה","סקרנות","יצירתיות","שאיפה למצוינות",
+      "פתיחות מחשבתית","גילוי עצמי","ביטחון עצמי",
+      "צמיחה אישית","אחריות אישית",
+      // אורח חיים
+      "בריאות","איזון בחיים","פשטות","חופש","עצמאות",
+      "שמחה","הכרת תודה","אופטימיות","הרפתקנות","חיבור לטבע",
+      // בית וחיים משותפים
+      "סדר","שיתוף","עזרה בבית","התחשבות",
+      "אחריות משותפת","זמן משפחתי","מסורת משפחתית",
+      // נוספים
+      "כבוד הדדי",
+    ];
 
-import { useState, useEffect, useCallback } from "react";
-
-const ALL_VALUES = [
-  // יחסים במשפחה
-  "אהבה", "כבוד", "הקשבה", "סבלנות", "תמיכה",
-  "נאמנות", "אכפתיות", "פרגון", "קבלה", "חום משפחתי",
-  "שייכות", "אמון",
-  // אופי והתנהגות
-  "יושר", "אחריות", "אומץ", "התמדה", "משמעת עצמית",
-  "צניעות", "נדיבות", "אדיבות", "סובלנות", "אמינות",
-  "הגינות", "שליטה עצמית",
-  // חברתיים
-  "חברות", "עזרה לאחר", "שיתוף פעולה", "הכלה",
-  "קבלת השונה", "צדק", "שוויון", "תרומה לקהילה",
-  "מעורבות חברתית", "כבוד לאחר",
-  // התפתחות אישית
-  "למידה", "סקרנות", "יצירתיות", "שאיפה למצוינות",
-  "פתיחות מחשבתית", "גילוי עצמי", "ביטחון עצמי",
-  "צמיחה אישית", "אחריות אישית",
-  // אורח חיים
-  "בריאות", "איזון בחיים", "פשטות", "חופש", "עצמאות",
-  "שמחה", "הכרת תודה", "אופטימיות", "הרפתקנות", "חיבור לטבע",
-  // בית וחיים משותפים
-  "סדר", "שיתוף", "עזרה בבית", "התחשבות",
-  "אחריות משותפת", "זמן משפחתי", "מסורת משפחתית",
-  // נוספים
-  "כבוד הדדי",
-];
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-const TOTAL_ROUNDS = 5;
-
-function StarIcon({ size = 20 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-    </svg>
-  );
-}
-
-function CrownIcon({ size = 48 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 2h14v2H5v-2z" />
-    </svg>
-  );
-}
-
-function ShieldIcon({ size = 32 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
-
-function ScrollIcon({ size = 28 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8 21h12a2 2 0 002-2v-2H10v2a2 2 0 01-2 2zm0 0a2 2 0 01-2-2V5a2 2 0 012-2h8l4 4v10" />
-      <path d="M16 3v4h4" />
-    </svg>
-  );
-}
-
-function SparkleEffect() {
-  const sparkles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    delay: Math.random() * 3,
-    size: Math.random() * 6 + 2,
-    dur: Math.random() * 2 + 2,
-  }));
-  return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-      {sparkles.map((s) => (
-        <div
-          key={s.id}
-          style={{
-            position: "absolute",
-            left: `${s.left}%`,
-            top: `${s.top}%`,
-            width: s.size,
-            height: s.size,
-            borderRadius: "50%",
-            background: "rgba(255,215,0,0.7)",
-            animation: `sparkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ValueChip({ value, selected, onClick, variant = "current", animDelay = 0 }) {
-  const base = {
-    padding: "14px 28px",
-    borderRadius: 16,
-    fontSize: 20,
-    fontWeight: 700,
-    cursor: onClick ? "pointer" : "default",
-    transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-    border: "2px solid transparent",
-    fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-    letterSpacing: "0.02em",
-    userSelect: "none",
-    opacity: 0,
-    animation: `fadeSlideUp 0.5s ease ${animDelay}s forwards`,
-    position: "relative",
-  };
-
-  const styles = {
-    current: {
-      ...base,
-      background: selected
-        ? "linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)"
-        : "linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%)",
-      color: selected ? "#fff" : "#2d3748",
-      border: selected ? "2px solid #ffd700" : "2px solid #cbd5e0",
-      boxShadow: selected
-        ? "0 4px 20px rgba(26,58,92,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
-        : "0 2px 8px rgba(0,0,0,0.06)",
-      transform: selected ? "scale(1.05)" : "scale(1)",
-    },
-    new: {
-      ...base,
-      background: selected
-        ? "linear-gradient(135deg, #744210 0%, #b7791f 100%)"
-        : "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
-      color: selected ? "#fff" : "#744210",
-      border: selected ? "2px solid #ffd700" : "2px solid #f6e05e",
-      boxShadow: selected
-        ? "0 4px 20px rgba(116,66,16,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
-        : "0 2px 8px rgba(0,0,0,0.06)",
-      transform: selected ? "scale(1.05)" : "scale(1)",
-    },
-    final: {
-      ...base,
-      background: "linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 50%, #1a3a5c 100%)",
-      color: "#ffd700",
-      border: "2px solid #ffd700",
-      boxShadow: "0 6px 30px rgba(255,215,0,0.3), 0 2px 10px rgba(26,58,92,0.4)",
-      fontSize: 26,
-      padding: "18px 36px",
-      cursor: "default",
-    },
-  };
-
-  return (
-    <div
-      style={styles[variant]}
-      onClick={onClick}
-      onMouseEnter={(e) => {
-        if (onClick && !selected) e.currentTarget.style.transform = "scale(1.04)";
-      }}
-      onMouseLeave={(e) => {
-        if (onClick && !selected) e.currentTarget.style.transform = "scale(1)";
-      }}
-    >
-      {selected && variant !== "final" && (
-        <span style={{ position: "absolute", top: -6, left: "50%", transform: "translateX(-50%)", color: "#ffd700", filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.3))" }}>
-          <StarIcon size={16} />
-        </span>
-      )}
-      {value}
-    </div>
-  );
-}
-
-export default function ValuesMinister() {
-  const [phase, setPhase] = useState("intro"); // intro, playing, summary
-  const [myValues, setMyValues] = useState([]);
-  const [newValues, setNewValues] = useState([]);
-  const [round, setRound] = useState(0);
-  const [usedValues, setUsedValues] = useState(new Set());
-  const [selectedToRemove, setSelectedToRemove] = useState(new Set());
-  const [selectedToAdd, setSelectedToAdd] = useState(new Set());
-  const [swapMode, setSwapMode] = useState(false); // false = choosing to remove, true = choosing to add
-  const [introStep, setIntroStep] = useState(0);
-
-  const startGame = useCallback(() => {
-    const shuffled = shuffle(ALL_VALUES);
-    const initial = shuffled.slice(0, 5);
-    const used = new Set(initial);
-    setMyValues(initial);
-    setUsedValues(used);
-    setRound(0);
-    setPhase("playing");
-    dealNewRound(used);
-  }, []);
-
-  function dealNewRound(currentUsed) {
-    const available = ALL_VALUES.filter((v) => !currentUsed.has(v));
-    const next5 = shuffle(available).slice(0, 5);
-    setNewValues(next5);
-    setSelectedToRemove(new Set());
-    setSelectedToAdd(new Set());
-    setSwapMode(false);
-  }
-
-  function toggleRemove(val) {
-    setSelectedToRemove((prev) => {
-      const next = new Set(prev);
-      if (next.has(val)) next.delete(val);
-      else next.add(val);
-      return next;
-    });
-  }
-
-  function toggleAdd(val) {
-    const maxAdd = selectedToRemove.size;
-    setSelectedToAdd((prev) => {
-      const next = new Set(prev);
-      if (next.has(val)) {
-        next.delete(val);
-      } else if (next.size < maxAdd) {
-        next.add(val);
+    function shuffle(arr){
+      const a=[...arr];
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
       }
-      return next;
-    });
-  }
-
-  function proceedToAdd() {
-    setSwapMode(true);
-  }
-
-  function skipRound() {
-    const newRound = round + 1;
-    setRound(newRound);
-    const updatedUsed = new Set(usedValues);
-    newValues.forEach((v) => updatedUsed.add(v));
-    setUsedValues(updatedUsed);
-    if (newRound >= TOTAL_ROUNDS) {
-      setPhase("summary");
-    } else {
-      dealNewRound(updatedUsed);
+      return a;
     }
-  }
 
-  function confirmSwap() {
-    const removedArr = Array.from(selectedToRemove);
-    const addedArr = Array.from(selectedToAdd);
-    let updated = [...myValues];
-    removedArr.forEach((val, i) => {
-      const idx = updated.indexOf(val);
-      if (idx !== -1 && addedArr[i]) {
-        updated[idx] = addedArr[i];
-      }
-    });
-    setMyValues(updated);
-    const newRound = round + 1;
-    setRound(newRound);
-    const updatedUsed = new Set(usedValues);
-    newValues.forEach((v) => updatedUsed.add(v));
-    setUsedValues(updatedUsed);
-    if (newRound >= TOTAL_ROUNDS) {
-      setPhase("summary");
-    } else {
-      dealNewRound(updatedUsed);
+    const TOTAL_ROUNDS = 5;
+
+    function StarIcon({ size = 20 }){
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      );
     }
-  }
 
-  function restart() {
-    setPhase("intro");
-    setIntroStep(0);
-    setMyValues([]);
-    setRound(0);
-  }
+    function CrownIcon({ size = 48 }){
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 2h14v2H5v-2z" />
+        </svg>
+      );
+    }
 
-  const canConfirm = selectedToRemove.size > 0 && selectedToAdd.size === selectedToRemove.size;
+    function ShieldIcon({ size = 32 }){
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+      );
+    }
 
-  return (
-    <div
-      dir="rtl"
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(170deg, #0f1b2d 0%, #1a2f4a 30%, #1e3a5f 60%, #0f1b2d 100%)",
+    function ScrollIcon({ size = 28 }){
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 21h12a2 2 0 002-2v-2H10v2a2 2 0 01-2 2zm0 0a2 2 0 01-2-2V5a2 2 0 012-2h8l4 4v10" />
+          <path d="M16 3v4h4" />
+        </svg>
+      );
+    }
+
+    function SparkleEffect(){
+      const sparkles = Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        delay: Math.random() * 3,
+        size: Math.random() * 6 + 2,
+        dur: Math.random() * 2 + 2,
+      }));
+      return (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+          {sparkles.map((s) => (
+            <div
+              key={s.id}
+              style={{
+                position: "absolute",
+                left: `${s.left}%`,
+                top: `${s.top}%`,
+                width: s.size,
+                height: s.size,
+                borderRadius: "50%",
+                background: "rgba(255,215,0,0.7)",
+                animation: `sparkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    function ValueChip({ value, selected, onClick, variant = "current", animDelay = 0 }){
+      const base = {
+        padding: "14px 28px",
+        borderRadius: 16,
+        fontSize: 20,
+        fontWeight: 700,
+        cursor: onClick ? "pointer" : "default",
+        transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        border: "2px solid transparent",
         fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-        color: "#e2e8f0",
+        letterSpacing: "0.02em",
+        userSelect: "none",
+        opacity: 0,
+        animation: `fadeSlideUp 0.5s ease ${animDelay}s forwards`,
         position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;600;700;900&family=Heebo:wght@300;400;700;900&display=swap');
-        
-        @keyframes sparkle {
-          0%, 100% { opacity: 0; transform: scale(0); }
-          50% { opacity: 1; transform: scale(1); }
-        }
-        
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes crownFloat {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-8px) rotate(2deg); }
-        }
-        
-        @keyframes glowPulse {
-          0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.2); }
-          50% { box-shadow: 0 0 40px rgba(255,215,0,0.4); }
-        }
-        
-        @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(-30px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        
-        @keyframes expandLine {
-          from { width: 0; }
-          to { width: 60px; }
-        }
+      };
 
-        @keyframes celebrateBounce {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.08); }
+      const styles = {
+        current: {
+          ...base,
+          background: selected
+            ? "linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)"
+            : "linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%)",
+          color: selected ? "#fff" : "#2d3748",
+          border: selected ? "2px solid #ffd700" : "2px solid #cbd5e0",
+          boxShadow: selected
+            ? "0 4px 20px rgba(26,58,92,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
+            : "0 2px 8px rgba(0,0,0,0.06)",
+          transform: selected ? "scale(1.05)" : "scale(1)",
+        },
+        new: {
+          ...base,
+          background: selected
+            ? "linear-gradient(135deg, #744210 0%, #b7791f 100%)"
+            : "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
+          color: selected ? "#fff" : "#744210",
+          border: selected ? "2px solid #ffd700" : "2px solid #f6e05e",
+          boxShadow: selected
+            ? "0 4px 20px rgba(116,66,16,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
+            : "0 2px 8px rgba(0,0,0,0.06)",
+          transform: selected ? "scale(1.05)" : "scale(1)",
+        },
+        final: {
+          ...base,
+          background: "linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 50%, #1a3a5c 100%)",
+          color: "#ffd700",
+          border: "2px solid #ffd700",
+          boxShadow: "0 6px 30px rgba(255,215,0,0.3), 0 2px 10px rgba(26,58,92,0.4)",
+          fontSize: 26,
+          padding: "18px 36px",
+          cursor: "default",
+        },
+      };
+
+      return (
+        <div
+          style={styles[variant]}
+          onClick={onClick}
+          onMouseEnter={(e) => {
+            if (onClick && !selected) e.currentTarget.style.transform = "scale(1.04)";
+          }}
+          onMouseLeave={(e) => {
+            if (onClick && !selected) e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          {selected && variant !== "final" && (
+            <span style={{ position: "absolute", top: -6, left: "50%", transform: "translateX(-50%)", color: "#ffd700", filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.3))" }}>
+              <StarIcon size={16} />
+            </span>
+          )}
+          {value}
+        </div>
+      );
+    }
+
+    function ValuesMinister(){
+      const [phase, setPhase] = useState("intro"); // intro, playing, summary
+      const [myValues, setMyValues] = useState([]);
+      const [newValues, setNewValues] = useState([]);
+      const [round, setRound] = useState(0);
+      const [usedValues, setUsedValues] = useState(new Set());
+      const [selectedToRemove, setSelectedToRemove] = useState(new Set());
+      const [selectedToAdd, setSelectedToAdd] = useState(new Set());
+      const [swapMode, setSwapMode] = useState(false); // false = choosing to remove, true = choosing to add
+      const [introStep, setIntroStep] = useState(0);
+
+      const startGame = useCallback(() => {
+        const shuffled = shuffle(ALL_VALUES);
+        const initial = shuffled.slice(0, 5);
+        const used = new Set(initial);
+        setMyValues(initial);
+        setUsedValues(used);
+        setRound(0);
+        setPhase("playing");
+        dealNewRound(used);
+      }, []);
+
+      function dealNewRound(currentUsed){
+        const available = ALL_VALUES.filter((v) => !currentUsed.has(v));
+        const next5 = shuffle(available).slice(0, 5);
+        setNewValues(next5);
+        setSelectedToRemove(new Set());
+        setSelectedToAdd(new Set());
+        setSwapMode(false);
+      }
+
+      function toggleRemove(val){
+        setSelectedToRemove((prev) => {
+          const next = new Set(prev);
+          if (next.has(val)) next.delete(val);
+          else next.add(val);
+          return next;
+        });
+      }
+
+      function toggleAdd(val){
+        const maxAdd = selectedToRemove.size;
+        setSelectedToAdd((prev) => {
+          const next = new Set(prev);
+          if (next.has(val)) {
+            next.delete(val);
+          } else if (next.size < maxAdd) {
+            next.add(val);
+          }
+          return next;
+        });
+      }
+
+      function proceedToAdd(){
+        setSwapMode(true);
+      }
+
+      function skipRound(){
+        const newRound = round + 1;
+        setRound(newRound);
+        const updatedUsed = new Set(usedValues);
+        newValues.forEach((v) => updatedUsed.add(v));
+        setUsedValues(updatedUsed);
+        if (newRound >= TOTAL_ROUNDS) {
+          setPhase("summary");
+        } else {
+          dealNewRound(updatedUsed);
         }
+      }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-      `}</style>
+      function confirmSwap(){
+        const removedArr = Array.from(selectedToRemove);
+        const addedArr = Array.from(selectedToAdd);
+        let updated = [...myValues];
+        removedArr.forEach((val, i) => {
+          const idx = updated.indexOf(val);
+          if (idx !== -1 && addedArr[i]) {
+            updated[idx] = addedArr[i];
+          }
+        });
+        setMyValues(updated);
+        const newRound = round + 1;
+        setRound(newRound);
+        const updatedUsed = new Set(usedValues);
+        newValues.forEach((v) => updatedUsed.add(v));
+        setUsedValues(updatedUsed);
+        if (newRound >= TOTAL_ROUNDS) {
+          setPhase("summary");
+        } else {
+          dealNewRound(updatedUsed);
+        }
+      }
 
-      <SparkleEffect />
+      function restart(){
+        setPhase("intro");
+        setIntroStep(0);
+        setMyValues([]);
+        setRound(0);
+      }
 
-      {/* Background ornament */}
-      <div style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 600,
-        height: 600,
-        borderRadius: "50%",
-        border: "1px solid rgba(255,215,0,0.05)",
-        pointerEvents: "none",
-      }} />
-      <div style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 400,
-        height: 400,
-        borderRadius: "50%",
-        border: "1px solid rgba(255,215,0,0.08)",
-        pointerEvents: "none",
-      }} />
+      const canConfirm = selectedToRemove.size > 0 && selectedToAdd.size === selectedToRemove.size;
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 700, margin: "0 auto", padding: "40px 20px" }}>
-        
-        {/* INTRO PHASE */}
-        {phase === "intro" && (
-          <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease" }}>
-            <div style={{ animation: "crownFloat 3s ease-in-out infinite", color: "#ffd700", marginBottom: 16 }}>
-              <CrownIcon size={72} />
-            </div>
-            <h1 style={{
-              fontSize: 42,
-              fontWeight: 900,
-              background: "linear-gradient(135deg, #ffd700 0%, #ffed4a 50%, #ffd700 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              marginBottom: 8,
-              lineHeight: 1.3,
-            }}>
-              שַׂר הָעֲרָכִים
-            </h1>
-            
-            <div style={{
-              width: 60,
-              height: 2,
-              background: "linear-gradient(90deg, transparent, #ffd700, transparent)",
-              margin: "16px auto",
-              animation: "expandLine 1s ease 0.3s both",
-            }} />
+      return (
+        <div
+          dir="rtl"
+          style={{
+            minHeight: "100vh",
+            background: "linear-gradient(170deg, #0f1b2d 0%, #1a2f4a 30%, #1e3a5f 60%, #0f1b2d 100%)",
+            fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+            color: "#e2e8f0",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;600;700;900&family=Heebo:wght@300;400;700;900&display=swap');
 
-            {introStep === 0 && (
-              <div style={{ animation: "fadeSlideUp 0.6s ease", opacity: 0, animationFillMode: "forwards" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#ffd700", marginBottom: 20, opacity: 0.8 }}>
-                  <ScrollIcon size={22} />
-                  <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: "0.1em" }}>כתב מינוי רשמי</span>
+            @keyframes sparkle {
+              0%, 100% { opacity: 0; transform: scale(0); }
+              50% { opacity: 1; transform: scale(1); }
+            }
+
+            @keyframes fadeSlideUp {
+              from { opacity: 0; transform: translateY(20px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+
+            @keyframes crownFloat {
+              0%, 100% { transform: translateY(0) rotate(0deg); }
+              50% { transform: translateY(-8px) rotate(2deg); }
+            }
+
+            @keyframes glowPulse {
+              0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+              50% { box-shadow: 0 0 40px rgba(255,215,0,0.4); }
+            }
+
+            @keyframes slideInRight {
+              from { opacity: 0; transform: translateX(-30px); }
+              to { opacity: 1; transform: translateX(0); }
+            }
+
+            @keyframes expandLine {
+              from { width: 0; }
+              to { width: 60px; }
+            }
+
+            @keyframes celebrateBounce {
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.08); }
+            }
+
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+          `}</style>
+
+          <SparkleEffect />
+
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 600,
+            height: 600,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,215,0,0.05)",
+            pointerEvents: "none",
+          }} />
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            height: 400,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,215,0,0.08)",
+            pointerEvents: "none",
+          }} />
+
+          <div style={{ position: "relative", zIndex: 1, maxWidth: 700, margin: "0 auto", padding: "40px 20px" }}>
+
+            {phase === "intro" && (
+              <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease" }}>
+                <div style={{ animation: "crownFloat 3s ease-in-out infinite", color: "#ffd700", marginBottom: 16 }}>
+                  <CrownIcon size={72} />
                 </div>
-                
-                <div style={{
-                  background: "linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 100%)",
-                  border: "1px solid rgba(255,215,0,0.2)",
-                  borderRadius: 20,
-                  padding: "32px 28px",
-                  marginBottom: 32,
-                  textAlign: "right",
-                  lineHeight: 2,
-                }}>
-                  <p style={{ fontSize: 19, color: "#e2e8f0", marginBottom: 16 }}>
-                    הורה/ת יקר/ה,
-                  </p>
-                  <p style={{ fontSize: 17, color: "#cbd5e0" }}>
-                    ברגע זה, את/ה מקבל/ת מינוי מיוחד ונדיר:
-                  </p>
-                  <p style={{
-                    fontSize: 24,
-                    fontWeight: 900,
-                    color: "#ffd700",
-                    margin: "16px 0",
-                    textShadow: "0 2px 10px rgba(255,215,0,0.3)",
-                  }}>
-                    שַׂר/ת הָעֲרָכִים של המשפחה שלך
-                  </p>
-                  <p style={{ fontSize: 17, color: "#cbd5e0" }}>
-                    מכל ההורים בעולם, דווקא את/ה נבחרת להחליט
-                    אילו ערכים ילוו את המשפחה שלך בדרך.
-                  </p>
-                  <p style={{ fontSize: 17, color: "#cbd5e0", marginTop: 12 }}>
-                    זו אחריות גדולה. זו גם זכות גדולה.
-                  </p>
-                </div>
 
-                <button
-                  onClick={() => setIntroStep(1)}
-                  style={{
-                    padding: "16px 48px",
-                    fontSize: 20,
-                    fontWeight: 700,
-                    background: "linear-gradient(135deg, #b7791f 0%, #d69e2e 100%)",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 14,
-                    cursor: "pointer",
-                    fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 4px 20px rgba(183,121,31,0.4)",
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                >
-                  אני מקבל/ת את המינוי ✦
-                </button>
-              </div>
-            )}
-
-            {introStep === 1 && (
-              <div style={{ animation: "fadeSlideUp 0.6s ease", opacity: 0, animationFillMode: "forwards" }}>
-                <div style={{
-                  background: "linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 100%)",
-                  border: "1px solid rgba(255,215,0,0.15)",
-                  borderRadius: 20,
-                  padding: "32px 28px",
-                  marginBottom: 32,
-                  textAlign: "right",
-                  lineHeight: 2,
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                    <ShieldIcon size={28} />
-                    <span style={{ fontSize: 18, fontWeight: 700, color: "#ffd700" }}>איך זה עובד?</span>
-                  </div>
-                  <p style={{ fontSize: 17, color: "#cbd5e0", marginBottom: 12 }}>
-                    תקבל/י <strong style={{ color: "#ffd700" }}>5 ערכים</strong> ראשוניים — אלה הערכים שאיתם את/ה מתחיל/ה.
-                  </p>
-                  <p style={{ fontSize: 17, color: "#cbd5e0", marginBottom: 12 }}>
-                    בכל סבב, יוצגו לך <strong style={{ color: "#ffd700" }}>5 ערכים חדשים</strong>.
-                    את/ה יכול/ה להחליף ערכים קיימים בחדשים — או להישאר עם מה שיש.
-                  </p>
-                  <p style={{ fontSize: 17, color: "#cbd5e0", marginBottom: 12 }}>
-                    יש <strong style={{ color: "#ffd700" }}>{TOTAL_ROUNDS} סבבים</strong> בסה"כ.
-                  </p>
-                  <p style={{ fontSize: 19, color: "#e2e8f0", fontWeight: 700, marginTop: 16 }}>
-                    בסוף — 5 הערכים שנשארו הם אמנת הערכים של המשפחה שלך.
-                  </p>
-                </div>
-
-                <button
-                  onClick={startGame}
-                  style={{
-                    padding: "18px 56px",
-                    fontSize: 22,
-                    fontWeight: 900,
-                    background: "linear-gradient(135deg, #b7791f 0%, #d69e2e 50%, #ecc94b 100%)",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 14,
-                    cursor: "pointer",
-                    fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 4px 25px rgba(183,121,31,0.5)",
-                    animation: "glowPulse 2s ease-in-out infinite",
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                >
-                  קדימה, בואו נתחיל ✦
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* PLAYING PHASE */}
-        {phase === "playing" && (
-          <div style={{ animation: "fadeIn 0.5s ease" }}>
-            {/* Header */}
-            <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}>
-                <CrownIcon size={28} />
-                <h2 style={{
-                  fontSize: 26,
+                <h1 style={{
+                  fontSize: 42,
                   fontWeight: 900,
-                  color: "#ffd700",
+                  background: "linear-gradient(135deg, #ffd700 0%, #ffed4a 50%, #ffd700 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  marginBottom: 8,
+                  lineHeight: 1.3,
                 }}>
                   שַׂר הָעֲרָכִים
-                </h2>
-              </div>
-              
-              {/* Progress */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
-                {Array.from({ length: TOTAL_ROUNDS }, (_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: i < round ? 32 : i === round ? 40 : 32,
-                      height: 6,
-                      borderRadius: 3,
-                      background: i < round
-                        ? "#ffd700"
-                        : i === round
-                        ? "linear-gradient(90deg, #ffd700, #d69e2e)"
-                        : "rgba(255,215,0,0.15)",
-                      transition: "all 0.3s ease",
-                    }}
-                  />
-                ))}
-                <span style={{ fontSize: 14, color: "#a0aec0", marginRight: 8 }}>
-                  סבב {round + 1} מתוך {TOTAL_ROUNDS}
-                </span>
-              </div>
-            </div>
+                </h1>
 
-            {/* Current Values */}
-            <div style={{
-              background: "linear-gradient(135deg, rgba(26,58,92,0.5) 0%, rgba(15,27,45,0.5) 100%)",
-              border: "1px solid rgba(255,215,0,0.15)",
-              borderRadius: 24,
-              padding: "28px 24px",
-              marginBottom: 24,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-                <ShieldIcon size={22} />
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0" }}>
-                  {!swapMode ? "הערכים שלך — בחר/י מה להחליף (או דלג/י)" : "הערכים שלך"}
-                </h3>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
-                {myValues.map((v, i) => (
-                  <ValueChip
-                    key={v + i}
-                    value={v}
-                    variant="current"
-                    selected={selectedToRemove.has(v)}
-                    onClick={!swapMode ? () => toggleRemove(v) : null}
-                    animDelay={i * 0.08}
-                  />
-                ))}
-              </div>
-            </div>
+                <div style={{
+                  width: 60,
+                  height: 2,
+                  background: "linear-gradient(90deg, transparent, #ffd700, transparent)",
+                  margin: "16px auto",
+                  animation: "expandLine 1s ease 0.3s both",
+                }} />
 
-            {/* Swap Arrow */}
-            {selectedToRemove.size > 0 && (
-              <div style={{
-                textAlign: "center",
-                margin: "8px 0",
-                animation: "fadeIn 0.3s ease",
-                color: "#ffd700",
-                fontSize: 28,
-              }}>
-                ⇅
+                {introStep === 0 && (
+                  <div style={{ animation: "fadeSlideUp 0.6s ease", opacity: 0, animationFillMode: "forwards" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#ffd700", marginBottom: 20, opacity: 0.8 }}>
+                      <ScrollIcon size={22} />
+                      <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: "0.1em" }}>כתב מינוי רשמי</span>
+                    </div>
+
+                    <div style={{
+                      background: "linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 100%)",
+                      border: "1px solid rgba(255,215,0,0.2)",
+                      borderRadius: 20,
+                      padding: "32px 28px",
+                      marginBottom: 32,
+                      textAlign: "right",
+                      lineHeight: 2,
+                    }}>
+                      <p style={{ fontSize: 19, color: "#e2e8f0", marginBottom: 16 }}>
+                        הורה/ת יקר/ה,
+                      </p>
+                      <p style={{ fontSize: 17, color: "#cbd5e0" }}>
+                        ברגע זה, את/ה מקבל/ת מינוי מיוחד ונדיר:
+                      </p>
+                      <p style={{
+                        fontSize: 24,
+                        fontWeight: 900,
+                        color: "#ffd700",
+                        margin: "16px 0",
+                        textShadow: "0 2px 10px rgba(255,215,0,0.3)",
+                      }}>
+                        שַׂר/ת הָעֲרָכִים של המשפחה שלך
+                      </p>
+                      <p style={{ fontSize: 17, color: "#cbd5e0" }}>
+                        מכל ההורים בעולם, דווקא את/ה נבחרת להחליט
+                        אילו ערכים ילוו את המשפחה שלך בדרך.
+                      </p>
+                      <p style={{ fontSize: 17, color: "#cbd5e0", marginTop: 12 }}>
+                        זו אחריות גדולה. זו גם זכות גדולה.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setIntroStep(1)}
+                      style={{
+                        padding: "16px 48px",
+                        fontSize: 20,
+                        fontWeight: 700,
+                        background: "linear-gradient(135deg, #b7791f 0%, #d69e2e 100%)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 14,
+                        cursor: "pointer",
+                        fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 4px 20px rgba(183,121,31,0.4)",
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                    >
+                      אני מקבל/ת את המינוי ✦
+                    </button>
+                  </div>
+                )}
+
+                {introStep === 1 && (
+                  <div style={{ animation: "fadeSlideUp 0.6s ease", opacity: 0, animationFillMode: "forwards" }}>
+                    <div style={{
+                      background: "linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 100%)",
+                      border: "1px solid rgba(255,215,0,0.15)",
+                      borderRadius: 20,
+                      padding: "32px 28px",
+                      marginBottom: 32,
+                      textAlign: "right",
+                      lineHeight: 2,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                        <ShieldIcon size={28} />
+                        <span style={{ fontSize: 18, fontWeight: 700, color: "#ffd700" }}>איך זה עובד?</span>
+                      </div>
+                      <p style={{ fontSize: 17, color: "#cbd5e0", marginBottom: 12 }}>
+                        תקבל/י <strong style={{ color: "#ffd700" }}>5 ערכים</strong> ראשוניים, אלה הערכים שאיתם את/ה מתחיל/ה.
+                      </p>
+                      <p style={{ fontSize: 17, color: "#cbd5e0", marginBottom: 12 }}>
+                        בכל סבב, יוצגו לך <strong style={{ color: "#ffd700" }}>5 ערכים חדשים</strong>.
+                        את/ה יכול/ה להחליף ערכים קיימים בחדשים, או להישאר עם מה שיש.
+                      </p>
+                      <p style={{ fontSize: 17, color: "#cbd5e0", marginBottom: 12 }}>
+                        יש <strong style={{ color: "#ffd700" }}>{TOTAL_ROUNDS} סבבים</strong> בסה"כ.
+                      </p>
+                      <p style={{ fontSize: 19, color: "#e2e8f0", fontWeight: 700, marginTop: 16 }}>
+                        בסוף, 5 הערכים שנשארו הם אמנת הערכים של המשפחה שלך.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={startGame}
+                      style={{
+                        padding: "18px 56px",
+                        fontSize: 22,
+                        fontWeight: 900,
+                        background: "linear-gradient(135deg, #b7791f 0%, #d69e2e 50%, #ecc94b 100%)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 14,
+                        cursor: "pointer",
+                        fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 4px 25px rgba(183,121,31,0.5)",
+                        animation: "glowPulse 2s ease-in-out infinite",
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                    >
+                      קדימה, בואו נתחיל ✦
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* New Values */}
-            <div style={{
-              background: "linear-gradient(135deg, rgba(116,66,16,0.2) 0%, rgba(183,121,31,0.1) 100%)",
-              border: "1px solid rgba(255,215,0,0.15)",
-              borderRadius: 24,
-              padding: "28px 24px",
-              marginBottom: 28,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-                <StarIcon size={20} />
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#ffeeba" }}>
-                  {swapMode
-                    ? `ערכים חדשים — בחר/י ${selectedToRemove.size} להחלפה`
-                    : "ערכים חדשים שהגיעו"}
-                </h3>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
-                {newValues.map((v, i) => (
-                  <ValueChip
-                    key={v + i}
-                    value={v}
-                    variant="new"
-                    selected={selectedToAdd.has(v)}
-                    onClick={swapMode ? () => toggleAdd(v) : null}
-                    animDelay={i * 0.08}
-                  />
-                ))}
-              </div>
-            </div>
+            {phase === "playing" && (
+              <div style={{ animation: "fadeIn 0.5s ease" }}>
+                <div style={{ textAlign: "center", marginBottom: 32 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}>
+                    <CrownIcon size={28} />
+                    <h2 style={{ fontSize: 26, fontWeight: 900, color: "#ffd700" }}>
+                      שַׂר הָעֲרָכִים
+                    </h2>
+                  </div>
 
-            {/* Actions */}
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              {!swapMode && (
-                <>
-                  <button
-                    onClick={skipRound}
-                    style={{
-                      padding: "14px 32px",
-                      fontSize: 17,
-                      fontWeight: 600,
-                      background: "rgba(255,255,255,0.06)",
-                      color: "#a0aec0",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      borderRadius: 12,
-                      cursor: "pointer",
-                      fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                  >
-                    אני נשאר/ת עם מה שיש
-                  </button>
-                  {selectedToRemove.size > 0 && (
-                    <button
-                      onClick={proceedToAdd}
-                      style={{
-                        padding: "14px 32px",
-                        fontSize: 17,
-                        fontWeight: 700,
-                        background: "linear-gradient(135deg, #b7791f, #d69e2e)",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 12,
-                        cursor: "pointer",
-                        fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-                        transition: "all 0.2s ease",
-                        boxShadow: "0 4px 15px rgba(183,121,31,0.4)",
-                        animation: "fadeSlideUp 0.3s ease both",
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                    >
-                      עכשיו בחר/י {selectedToRemove.size} ערכים חדשים ←
-                    </button>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
+                    {Array.from({ length: TOTAL_ROUNDS }, (_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: i < round ? 32 : i === round ? 40 : 32,
+                          height: 6,
+                          borderRadius: 3,
+                          background: i < round
+                            ? "#ffd700"
+                            : i === round
+                            ? "linear-gradient(90deg, #ffd700, #d69e2e)"
+                            : "rgba(255,215,0,0.15)",
+                          transition: "all 0.3s ease",
+                        }}
+                      />
+                    ))}
+                    <span style={{ fontSize: 14, color: "#a0aec0", marginRight: 8 }}>
+                      סבב {round + 1} מתוך {TOTAL_ROUNDS}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(26,58,92,0.5) 0%, rgba(15,27,45,0.5) 100%)",
+                  border: "1px solid rgba(255,215,0,0.15)",
+                  borderRadius: 24,
+                  padding: "28px 24px",
+                  marginBottom: 24,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+                    <ShieldIcon size={22} />
+                    <h3 style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0" }}>
+                      {!swapMode ? "הערכים שלך, בחר/י מה להחליף (או דלג/י)" : "הערכים שלך"}
+                    </h3>
+                  </div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+                    {myValues.map((v, i) => (
+                      <ValueChip
+                        key={v + i}
+                        value={v}
+                        variant="current"
+                        selected={selectedToRemove.has(v)}
+                        onClick={!swapMode ? () => toggleRemove(v) : null}
+                        animDelay={i * 0.08}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {selectedToRemove.size > 0 && (
+                  <div style={{
+                    textAlign: "center",
+                    margin: "8px 0",
+                    animation: "fadeIn 0.3s ease",
+                    color: "#ffd700",
+                    fontSize: 28,
+                  }}>
+                    ⇅
+                  </div>
+                )}
+
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(116,66,16,0.2) 0%, rgba(183,121,31,0.1) 100%)",
+                  border: "1px solid rgba(255,215,0,0.15)",
+                  borderRadius: 24,
+                  padding: "28px 24px",
+                  marginBottom: 28,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+                    <StarIcon size={20} />
+                    <h3 style={{ fontSize: 18, fontWeight: 700, color: "#ffeeba" }}>
+                      {swapMode
+                        ? `ערכים חדשים, בחר/י ${selectedToRemove.size} להחלפה`
+                        : "ערכים חדשים שהגיעו"}
+                    </h3>
+                  </div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+                    {newValues.map((v, i) => (
+                      <ValueChip
+                        key={v + i}
+                        value={v}
+                        variant="new"
+                        selected={selectedToAdd.has(v)}
+                        onClick={swapMode ? () => toggleAdd(v) : null}
+                        animDelay={i * 0.08}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                  {!swapMode && (
+                    <>
+                      <button
+                        onClick={skipRound}
+                        style={{
+                          padding: "14px 32px",
+                          fontSize: 17,
+                          fontWeight: 600,
+                          background: "rgba(255,255,255,0.06)",
+                          color: "#a0aec0",
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          borderRadius: 12,
+                          cursor: "pointer",
+                          fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+                          transition: "all 0.2s ease",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                      >
+                        אני נשאר/ת עם מה שיש
+                      </button>
+
+                      {selectedToRemove.size > 0 && (
+                        <button
+                          onClick={proceedToAdd}
+                          style={{
+                            padding: "14px 32px",
+                            fontSize: 17,
+                            fontWeight: 700,
+                            background: "linear-gradient(135deg, #b7791f, #d69e2e)",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: 12,
+                            cursor: "pointer",
+                            fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+                            transition: "all 0.2s ease",
+                            boxShadow: "0 4px 15px rgba(183,121,31,0.4)",
+                            animation: "fadeSlideUp 0.3s ease both",
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                        >
+                          עכשיו בחר/י {selectedToRemove.size} ערכים חדשים ←
+                        </button>
+                      )}
+                    </>
                   )}
-                </>
-              )}
 
-              {swapMode && (
-                <>
+                  {swapMode && (
+                    <>
+                      <button
+                        onClick={() => { setSwapMode(false); setSelectedToAdd(new Set()); }}
+                        style={{
+                          padding: "14px 28px",
+                          fontSize: 17,
+                          fontWeight: 600,
+                          background: "rgba(255,255,255,0.06)",
+                          color: "#a0aec0",
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          borderRadius: 12,
+                          cursor: "pointer",
+                          fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+                        }}
+                      >
+                        ← חזרה
+                      </button>
+
+                      <button
+                        onClick={confirmSwap}
+                        disabled={!canConfirm}
+                        style={{
+                          padding: "14px 36px",
+                          fontSize: 17,
+                          fontWeight: 700,
+                          background: canConfirm
+                            ? "linear-gradient(135deg, #2f855a, #48bb78)"
+                            : "rgba(255,255,255,0.08)",
+                          color: canConfirm ? "#fff" : "#718096",
+                          border: "none",
+                          borderRadius: 12,
+                          cursor: canConfirm ? "pointer" : "not-allowed",
+                          fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+                          transition: "all 0.3s ease",
+                          boxShadow: canConfirm ? "0 4px 15px rgba(47,133,90,0.4)" : "none",
+                        }}
+                        onMouseEnter={(e) => { if (canConfirm) e.currentTarget.style.transform = "scale(1.03)"; }}
+                        onMouseLeave={(e) => { if (canConfirm) e.currentTarget.style.transform = "scale(1)"; }}
+                      >
+                        אישור החלפה ✦
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <p style={{
+                  textAlign: "center",
+                  fontSize: 14,
+                  color: "#718096",
+                  marginTop: 24,
+                  fontStyle: "italic",
+                }}>
+                  {!swapMode
+                    ? "לחץ/י על ערכים קיימים שאת/ה רוצה להחליף, או דלג/י אם הכל טוב"
+                    : `בחר/י ${selectedToRemove.size} ערכים חדשים שיחליפו את הערכים שסימנת`
+                  }
+                </p>
+              </div>
+            )}
+
+            {phase === "summary" && (
+              <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease" }}>
+                <SparkleEffect />
+
+                <div style={{ animation: "crownFloat 3s ease-in-out infinite", color: "#ffd700", marginBottom: 12 }}>
+                  <CrownIcon size={64} />
+                </div>
+
+                <h2 style={{
+                  fontSize: 36,
+                  fontWeight: 900,
+                  background: "linear-gradient(135deg, #ffd700 0%, #ffed4a 50%, #ffd700 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  marginBottom: 8,
+                }}>
+                  אמנת הערכים שלך
+                </h2>
+
+                <p style={{ fontSize: 18, color: "#a0aec0", marginBottom: 32, lineHeight: 1.8 }}>
+                  אלו הערכים שבחרת כשר/ת הערכים של המשפחה שלך.
+                  <br />
+                  הם המצפן שילווה אותך בדרך ההורות.
+                </p>
+
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(26,58,92,0.6) 0%, rgba(15,27,45,0.6) 100%)",
+                  border: "2px solid rgba(255,215,0,0.3)",
+                  borderRadius: 28,
+                  padding: "40px 32px",
+                  marginBottom: 36,
+                  animation: "glowPulse 3s ease-in-out infinite",
+                }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+                    {myValues.map((v, i) => (
+                      <ValueChip
+                        key={v + i}
+                        value={v}
+                        variant="final"
+                        selected={false}
+                        onClick={null}
+                        animDelay={i * 0.15}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{
+                  background: "rgba(255,215,0,0.06)",
+                  border: "1px solid rgba(255,215,0,0.12)",
+                  borderRadius: 16,
+                  padding: "24px",
+                  marginBottom: 32,
+                  textAlign: "right",
+                  lineHeight: 2,
+                }}>
+                  <p style={{ fontSize: 17, color: "#cbd5e0" }}>
+                    💡 <strong style={{ color: "#ffd700" }}>מה עכשיו?</strong> קח/י רגע לחשוב, האם הערכים האלה באמת משקפים את מה שהכי חשוב לך כהורה?
+                    שתף/י את הערכים עם בני המשפחה ושוחח/י איתם על המשמעות שלהם בחיי היום-יום.
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
                   <button
-                    onClick={() => { setSwapMode(false); setSelectedToAdd(new Set()); }}
+                    onClick={restart}
                     style={{
-                      padding: "14px 28px",
-                      fontSize: 17,
-                      fontWeight: 600,
-                      background: "rgba(255,255,255,0.06)",
-                      color: "#a0aec0",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      borderRadius: 12,
-                      cursor: "pointer",
-                      fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-                    }}
-                  >
-                    ← חזרה
-                  </button>
-                  <button
-                    onClick={confirmSwap}
-                    disabled={!canConfirm}
-                    style={{
-                      padding: "14px 36px",
-                      fontSize: 17,
+                      padding: "16px 40px",
+                      fontSize: 18,
                       fontWeight: 700,
-                      background: canConfirm
-                        ? "linear-gradient(135deg, #2f855a, #48bb78)"
-                        : "rgba(255,255,255,0.08)",
-                      color: canConfirm ? "#fff" : "#718096",
+                      background: "linear-gradient(135deg, #b7791f, #d69e2e)",
+                      color: "#fff",
                       border: "none",
-                      borderRadius: 12,
-                      cursor: canConfirm ? "pointer" : "not-allowed",
+                      borderRadius: 14,
+                      cursor: "pointer",
                       fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
                       transition: "all 0.3s ease",
-                      boxShadow: canConfirm ? "0 4px 15px rgba(47,133,90,0.4)" : "none",
+                      boxShadow: "0 4px 20px rgba(183,121,31,0.4)",
                     }}
-                    onMouseEnter={(e) => { if (canConfirm) e.currentTarget.style.transform = "scale(1.03)"; }}
-                    onMouseLeave={(e) => { if (canConfirm) e.currentTarget.style.transform = "scale(1)"; }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
                   >
-                    אישור החלפה ✦
+                    רוצה לנסות שוב? ✦
                   </button>
-                </>
-              )}
-            </div>
 
-            {/* Tip */}
-            <p style={{
-              textAlign: "center",
-              fontSize: 14,
-              color: "#718096",
-              marginTop: 24,
-              fontStyle: "italic",
-            }}>
-              {!swapMode
-                ? "לחץ/י על ערכים קיימים שאת/ה רוצה להחליף, או דלג/י אם הכל טוב"
-                : `בחר/י ${selectedToRemove.size} ערכים חדשים שיחליפו את הערכים שסימנת`
-              }
-            </p>
-          </div>
-        )}
-
-        {/* SUMMARY PHASE */}
-        {phase === "summary" && (
-          <div style={{ textAlign: "center", animation: "fadeIn 0.8s ease" }}>
-            <SparkleEffect />
-            
-            <div style={{ animation: "crownFloat 3s ease-in-out infinite", color: "#ffd700", marginBottom: 12 }}>
-              <CrownIcon size={64} />
-            </div>
-            
-            <h2 style={{
-              fontSize: 36,
-              fontWeight: 900,
-              background: "linear-gradient(135deg, #ffd700 0%, #ffed4a 50%, #ffd700 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              marginBottom: 8,
-            }}>
-              אמנת הערכים שלך
-            </h2>
-            
-            <p style={{ fontSize: 18, color: "#a0aec0", marginBottom: 32, lineHeight: 1.8 }}>
-              אלו הערכים שבחרת כשר/ת הערכים של המשפחה שלך.
-              <br />
-              הם המצפן שילווה אותך בדרך ההורות.
-            </p>
-
-            <div style={{
-              background: "linear-gradient(135deg, rgba(26,58,92,0.6) 0%, rgba(15,27,45,0.6) 100%)",
-              border: "2px solid rgba(255,215,0,0.3)",
-              borderRadius: 28,
-              padding: "40px 32px",
-              marginBottom: 36,
-              animation: "glowPulse 3s ease-in-out infinite",
-            }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-                {myValues.map((v, i) => (
-                  <ValueChip
-                    key={v}
-                    value={v}
-                    variant="final"
-                    animDelay={i * 0.15}
-                  />
-                ))}
+                  <button
+                    onClick={() => {
+                      const text = `🏛️ *אמנת הערכים של המשפחה שלי*\n\nעברתי תהליך של בחירת ערכים, ואלה 5 הערכים שהכי חשובים לי כהורה:\n\n${myValues.map((v) => `⭐ ${v}`).join("\n")}\n\nמה הערכים שלכם?`;
+                      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                      window.open(url, "_blank");
+                    }}
+                    style={{
+                      padding: "16px 40px",
+                      fontSize: 18,
+                      fontWeight: 700,
+                      background: "linear-gradient(135deg, #128C7E, #25D366)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 14,
+                      cursor: "pointer",
+                      fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
+                      transition: "all 0.3s ease",
+                      boxShadow: "0 4px 20px rgba(37,211,102,0.35)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    שיתוף בוואטסאפ
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div style={{
-              background: "rgba(255,215,0,0.06)",
-              border: "1px solid rgba(255,215,0,0.12)",
-              borderRadius: 16,
-              padding: "24px",
-              marginBottom: 32,
-              textAlign: "right",
-              lineHeight: 2,
-            }}>
-              <p style={{ fontSize: 17, color: "#cbd5e0" }}>
-                💡 <strong style={{ color: "#ffd700" }}>מה עכשיו?</strong> קח/י רגע לחשוב — האם הערכים האלה באמת משקפים את מה שהכי חשוב לך כהורה? 
-                שתף/י את הערכים עם בני המשפחה ושוחח/י איתם על המשמעות שלהם בחיי היום-יום.
-              </p>
-            </div>
-
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <button
-                onClick={restart}
-                style={{
-                  padding: "16px 40px",
-                  fontSize: 18,
-                  fontWeight: 700,
-                  background: "linear-gradient(135deg, #b7791f, #d69e2e)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 14,
-                  cursor: "pointer",
-                  fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 4px 20px rgba(183,121,31,0.4)",
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-              >
-                רוצה לנסות שוב? ✦
-              </button>
-
-              <button
-                onClick={() => {
-                  const text = `🏛️ *אמנת הערכים של המשפחה שלי*\n\nעברתי תהליך של בחירת ערכים, ואלה 5 הערכים שהכי חשובים לי כהורה:\n\n${myValues.map((v, i) => `⭐ ${v}`).join("\n")}\n\nמה הערכים שלכם?`;
-                  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                  window.open(url, "_blank");
-                }}
-                style={{
-                  padding: "16px 40px",
-                  fontSize: 18,
-                  fontWeight: 700,
-                  background: "linear-gradient(135deg, #128C7E, #25D366)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 14,
-                  cursor: "pointer",
-                  fontFamily: "'Noto Sans Hebrew', 'Heebo', sans-serif",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 4px 20px rgba(37,211,102,0.35)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                שיתוף בוואטסאפ
-              </button>
-            </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
-</script>
+        </div>
+      );
+    }
 
+    ReactDOM.createRoot(document.getElementById("root")).render(<ValuesMinister />);
+  </script>
 </body>
 </html>
